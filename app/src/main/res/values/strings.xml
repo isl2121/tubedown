@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">TubeDown</string>
+    <string name="drawer_open">Menu opened</string>
+    <string name="drawer_close">Menu closed</string>
+    <string name="action_settings">Settings</string>
+    <string name="label_your_name">Name</string>
+    <string name="label_your_email">Email</string>
+    <string name="hint_your_name">e.g. Larry</string>
+    <string name="hint_your_email">Optional</string>
+    <string name="menu_item_one">Menu Item</string>
+    <string name="internal_storage">Internal storage</string>
+    <string name="empty_directory">빈 디렉토리</string>
+    <string name="storage_removed">저장소가 제거되었습니다.</string>
+    <string name="choose_file">파일 선택</string>
+    <string name="error_selecting_file">파일 선택 오류</string>
+    <string name="chooser_title">Lorem ipsum</string>
+    <string name="Backpress">뒤로 버튼을 한번 더 누르시면 종료됩니다.</string>
+ <!--   <string name="banner_ad_unit_id">ca-app-pub-8286911079963314/1460970785</string> -->
+    <string name="check_result">확인</string>
+    <string name="check_false">취소</string>
+</resources>

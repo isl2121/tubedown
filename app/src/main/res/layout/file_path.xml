@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <TextView
+        android:id="@+id/textMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="" />
+
+    <ListView
+        android:id="@+id/listFile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/textMessage"
+        android:layout_above="@+id/linearLayout" />
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/linearLayout">
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:background="@drawable/selectable_item_background"
+            android:id="@+id/file_path_ok_btn"
+            android:layout_width="0dp"
+            android:clickable="true"
+            android:onClick="onClick"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="확인" />
+
+        <View
+            android:background="?android:attr/dividerHorizontal"
+            android:layout_height="match_parent"
+            android:layout_width="1dp" />
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:background="@drawable/selectable_item_background"
+            android:id="@+id/file_path_false_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:onClick="onClick"
+            android:layout_height="wrap_content"
+            android:text="취소" />
+
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,116 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/loading"
+    android:screenOrientation="portrait" >
+
+<!--  <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        style="@style/fileChooserName"
+        android:layout_width="fill_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight" />
+
+    <Button
+        android:layout_width="285dp"
+        android:layout_height="wrap_content"
+        android:text="파일 선택"
+        android:id="@+id/file_path_btn"
+        android:layout_gravity="center_horizontal" /> -->
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/main_black_button"
+        android:padding="15dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:id="@+id/file_path_btn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/file_path_txt"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            style="@style/SmallTextView" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/main_black_button"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:id="@+id/wifi_data_btn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/wifi_data_txt"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            style="@style/SmallTextView"
+            android:text="다운로드 방식 선택" />
+    </LinearLayout>
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/main_black_button"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:id="@+id/use_info_btn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/use_info_txt"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            style="@style/SmallTextView"
+            android:text="사용안내" />
+    </LinearLayout>
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/main_black_button"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:id="@+id/move_admin_btn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/move_admin_txt"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            style="@style/SmallTextView"
+            android:text="개발자 블로그" />
+    </LinearLayout>
+</LinearLayout>

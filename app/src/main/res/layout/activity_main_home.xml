@@ -1,0 +1,116 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:screenOrientation="portrait">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_above="@+id/linearLayout1">
+        <WebView
+            android:id="@+id/webview_youtube"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loading_bar"
+            android:layout_gravity="center" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/first_help"
+            android:src="@drawable/first_help"
+            android:layout_gravity="left|center_vertical" />
+
+    </FrameLayout>
+
+
+    <View
+        android:background="?android:attr/dividerHorizontal"
+        android:layout_height="1dp"
+        android:layout_width="match_parent"
+        android:layout_above="@+id/linearLayout1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <LinearLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:orientation="vertical"
+        android:layout_alignParentRight="true"
+        android:id="@+id/linearLayout1">
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_above="@+id/linearLayout1"
+            android:id="@+id/linearLayout2">
+
+            <Button
+                style="?android:attr/buttonBarButtonStyle"
+                android:background="@drawable/selectable_item_background"
+                android:id="@+id/mp4_button"
+                android:layout_width="0dp"
+                android:clickable="true"
+                android:onClick="onClick"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="avi" />
+
+            <View
+                android:background="?android:attr/dividerHorizontal"
+                android:layout_height="match_parent"
+                android:layout_width="1dp" />
+
+            <Button
+                style="?android:attr/buttonBarButtonStyle"
+                android:background="@drawable/selectable_item_background"
+                android:id="@+id/m4a_button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+
+                android:clickable="true"
+                android:onClick="onClick"
+                android:layout_height="wrap_content"
+                android:text="m4a" />
+
+        </LinearLayout>
+
+        <View
+            android:background="?android:attr/dividerHorizontal"
+            android:layout_height="1dp"
+            android:layout_width="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/frameLayout"
+            android:layout_gravity="center">
+            <com.google.android.gms.ads.AdView android:id="@+id/adView_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                ads:adUnitId="ca-app-pub-8286911079963314/1460970785"
+                ads:adSize="BANNER"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
