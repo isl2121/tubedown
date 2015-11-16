@@ -1,6 +1,7 @@
 package blackcat.tubedown.service;
 
 import blackcat.tubedown.MainHomeFragment;
+import blackcat.tubedown.MaindaumFragment;
 import blackcat.tubedown.SettingFragment;
 
 /**
@@ -10,6 +11,7 @@ public class InterfaceMapping {
     private static InterfaceMapping instance;
     private MainHomeFragment fragment;
     private SettingFragment se_fragment;
+    private MaindaumFragment da_fragment;
 
     private InterfaceMapping() {
 
@@ -31,4 +33,7 @@ public class InterfaceMapping {
         return fragment;
     }
 
+    public void setFragment(MaindaumFragment da_fragment) {
+        this.da_fragment = da_fragment;
+    }
 }

@@ -111,7 +111,7 @@ public class NavigationDrawerFragment extends Fragment implements blackcat.tubed
         List<NavigationItem> items = new ArrayList<NavigationItem>();
         items.add(new NavigationItem("메인페이지", getResources().getDrawable(R.drawable.ic_video_library_black)));
         items.add(new NavigationItem("설정", getResources().getDrawable(R.drawable.ic_settings_black)));
-      //  items.add(new NavigationItem("item 3", getResources().getDrawable(R.drawable.ic_menu_check)));
+        items.add(new NavigationItem("item 3", getResources().getDrawable(R.drawable.ic_menu_check)));
         return items;
     }
 

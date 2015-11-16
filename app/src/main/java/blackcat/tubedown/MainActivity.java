@@ -71,6 +71,10 @@ public class MainActivity extends ActionBarActivity
                 fragmentToReplace = new SettingFragment();
                 // Profile Fragment
                 break;
+            case 2:
+                fragmentToReplace = new MaindaumFragment();
+                // Profile Fragment
+                break;
 
         }
         FragmentManager fragmentManager = getSupportFragmentManager();
