@@ -24,7 +24,6 @@ import android.widget.Toast;
 import blackcat.tubedown.drawer.NavigationDrawerCallbacks;
 import blackcat.tubedown.drawer.NavigationDrawerFragment;
 
-
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerCallbacks {
 

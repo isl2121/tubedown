@@ -16,7 +16,8 @@
         android:gravity="center_horizontal"
         android:orientation="horizontal" >
 
-        <com.sentaca.android.accordion.widget.ToggleImageLabeledButton
+
+        <blackcat.tubedown.service.ToggleImageLabeledButton
             android:id="@+id/foldButton"
             android:layout_width="24dip"
             android:layout_height="24dip"

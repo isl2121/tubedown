@@ -18,4 +18,14 @@
  <!--   <string name="banner_ad_unit_id">ca-app-pub-8286911079963314/1460970785</string> -->
     <string name="check_result">확인</string>
     <string name="check_false">취소</string>
+
+
+    <string-array name="accordion_sections">
+        <item>Section B</item>
+    </string-array>
+
+    <integer-array name="accordion_visibility">
+        <item>1</item>
+    </integer-array>
+
 </resources>

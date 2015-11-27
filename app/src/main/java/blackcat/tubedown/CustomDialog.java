@@ -61,5 +61,4 @@ public class CustomDialog extends Dialog{
         this.mLeftClickListener = leftListener;
         this.mRightClickListener = rightListener;
     }
-
 }

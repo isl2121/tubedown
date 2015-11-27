@@ -32,37 +32,41 @@ import com.google.android.gms.ads.AdView;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import blackcat.tubedown.service.InterfaceMapping;
+import blackcat.tubedown.util.SharedPreferenceUtils;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainHomeFragment extends Fragment{
+public class MainHomeFragment extends Fragment {
 
     public MainHomeFragment() {
         InterfaceMapping.getInstance().setFragment(this);
     }
 
     final String strPref_Download_ID = "PREF_DOWNLOAD_ID";
-
-    SharedPreferences preferenceManager;
+    SharedPreferences mSharedPreference1;
+    SharedPreferenceUtils sh;
     DownloadManager downloadManager;
     MainActivity activity;
     private WebView mWebView;
     public static String File_name;
-    public String web_url,type,downloadUrl, Video_title;
+    public String web_url, type, downloadUrl, Video_title, filepath, name, path, data;
     public static View view;
     public CustomDialog mCustomDialog;
     public ProgressBar progressDialog;
-    public SharedPreferences.Editor PrefEdit;
     public long id;
+    public int data_type, downlist_cnt;
     public Boolean first_check;
     public static ImageView first_help;
     private AlertDialog mDialog = null;
-    private Button mMp3_button,mAvi_button;
+    private Button mMp3_button, mAvi_button;
+
     @Override
     public void onAttach(Activity activity) {
         this.activity = (MainActivity) activity;
@@ -72,25 +76,28 @@ public class MainHomeFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        sh = new SharedPreferenceUtils(getActivity());
+        mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(getActivity());
         view = inflater.inflate(blackcat.tubedown.R.layout.activity_main_home, null);
         progressDialog = (ProgressBar) view.findViewById(blackcat.tubedown.R.id.loading_bar);
         progressDialog.setVisibility(ProgressBar.GONE);
-        preferenceManager = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        PrefEdit = preferenceManager.edit();
-        first_check = preferenceManager.getBoolean("first", true);
+        first_check = sh.getValue("first", true);
         first_help = (ImageView) view.findViewById(blackcat.tubedown.R.id.first_help);
-        if(first_check) {
+        if (first_check) {
             First_alram();
-        }else{
+        } else {
             first_help.setVisibility(View.GONE);
         }
+
+        downlist_cnt = sh.getValue("downlist_cnt", 0);
         mAvi_button = (Button) view.findViewById(R.id.mp4_button);
         mMp3_button = (Button) view.findViewById(R.id.m4a_button);
         mWebView = (WebView) view.findViewById(blackcat.tubedown.R.id.webview_youtube);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.loadUrl("http://www.youtube.com/");
         mWebView.setWebViewClient(new WishWebViewClient());
-        AdView adView = (AdView)view.findViewById(R.id.adView_home);
+        AdView adView = (AdView) view.findViewById(R.id.adView_home);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
@@ -104,8 +111,8 @@ public class MainHomeFragment extends Fragment{
                     mMp3_button.setEnabled(false);
                     progressDialog.setVisibility(View.VISIBLE);
                     Toast.makeText(getActivity(), "영상을 추출중입니다", Toast.LENGTH_SHORT).show();
+                    getYoutubeDownurl(web_url, ".mp4");
                 }
-                getYoutubeDownurl(web_url, ".mp4");
             }
         });
 
@@ -159,14 +166,19 @@ public class MainHomeFragment extends Fragment{
             return true;
         }
     }
-
+/*
+  mAvi_button.setEnabled(true);
+                    mMp3_button.setEnabled(true);
+                    progressDialog.setVisibility(View.GONE);
+                    Toast.makeText(getActivity(), "저작권에 의해 다운로드받을수 없는 영상입니다", Toast.LENGTH_SHORT).show();
+ */
     private void getYoutubeDownurl(String url, String temp) {
         type = temp;
         YouTubeUriExtractor ytEx = new YouTubeUriExtractor(getActivity().getApplicationContext()) {
             @Override
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
                 if (ytFiles == null) {
-                    return;
+                  return;
                 }
                 int itag;
                 if (type.equals(".mp4")) {
@@ -208,9 +220,7 @@ public class MainHomeFragment extends Fragment{
                     mAvi_button.setEnabled(true);
                     mMp3_button.setEnabled(true);
                     progressDialog.setVisibility(View.GONE);
-
-
-                    mCustomDialog = new CustomDialog(getActivity(),videoTitle + type, leftListener, rightListener);
+                    mCustomDialog = new CustomDialog(getActivity(), videoTitle + type, leftListener, rightListener);
                     mCustomDialog.show();
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -236,6 +246,7 @@ public class MainHomeFragment extends Fragment{
         super.onResume();
         mWebView.onResume();
     }
+
     private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent arg1) {
@@ -243,7 +254,8 @@ public class MainHomeFragment extends Fragment{
             CheckDwnloadStatus();
         }
     };
-    private AlertDialog createDialog(){
+
+    private AlertDialog createDialog() {
         AlertDialog.Builder ab = new AlertDialog.Builder(getActivity());
         ab.setTitle("저작권 알람");
         ab.setMessage("다운로드 받은 동영상은 영리 목적이 아닌 개인 목적 용도로만 사용해야하며, 가정 및 이에 준하는 한정된 범위안에서 이용해야합니다. 동영상 다운로드 및 다운로드 받은 동영상 사용에 대한 저작권 및 초상권 침해에 관한 책인은 개인에게 있습니다.");
@@ -251,8 +263,7 @@ public class MainHomeFragment extends Fragment{
         ab.setNegativeButton("동의", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                PrefEdit.putBoolean("first", false);
-                PrefEdit.commit();
+                sh.put("first", false);
             }
         });
         ab.setPositiveButton("취소", new DialogInterface.OnClickListener() {
@@ -263,6 +274,7 @@ public class MainHomeFragment extends Fragment{
         });
         return ab.create();
     }
+
     private String replace(String url) {
         String temp;
         if (url.contains("v=")) {
@@ -306,18 +318,25 @@ public class MainHomeFragment extends Fragment{
     };
 
     private void downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName) {
+        int temp = sh.getValue("downlist_cnt", 0) + 1;
+        name = "downlist_num" + String.valueOf(temp);
+        path = "downlist_path" + String.valueOf(temp);
+        data = "downlist_path" + String.valueOf(temp);
+        Log.e("name",name);
 
-        preferenceManager = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String temp = preferenceManager.getString("get_file_path", Environment.DIRECTORY_DOWNLOADS);
-        int temp2 = preferenceManager.getInt("mWifi_Data", 2);
-
+        filepath = sh.getValue("get_file_path", Environment.DIRECTORY_DOWNLOADS);
+        data_type = sh.getValue("mWifi_Data", 2);
+        sh.put(name, fileName);
+        sh.put(path, filepath);
+        sh.put(data, NowTime());
+        sh.put("downlist_cnt", temp);
 
         Uri uri = Uri.parse(youtubeDlUrl);
         DownloadManager.Request request = new DownloadManager.Request(uri);
         request.setTitle(downloadTitle);
-        if (temp2 == 0) {
+        if (data_type == 0) {
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-        } else if (temp2 == 1) {
+        } else if (data_type == 1) {
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE);
         } else {
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
@@ -326,14 +345,12 @@ public class MainHomeFragment extends Fragment{
         request.setAllowedOverRoaming(false);
         request.allowScanningByMediaScanner();
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalPublicDir(temp, fileName);
-        Log.i("temp", temp);
+        request.setDestinationInExternalPublicDir(filepath, fileName);
         DownloadManager manager = (DownloadManager) getActivity().getApplicationContext().getSystemService(Context.DOWNLOAD_SERVICE);
 
-       id = manager.enqueue(request);
+        id = manager.enqueue(request);
         //Save the request id   SharedPreferences.Editor PrefEdit = preferenceManager.edit();
-        PrefEdit.putLong(strPref_Download_ID, id);
-        PrefEdit.commit();
+        sh.put(strPref_Download_ID, id);
 
     }
 
@@ -432,4 +449,16 @@ public class MainHomeFragment extends Fragment{
         }
     }
 
+    private String NowTime() {
+        String time;
+        long now = System.currentTimeMillis();
+        Date date = new Date(now);
+        SimpleDateFormat CurDateFormat = new SimpleDateFormat("yyyy년 MM월 dd일");
+        SimpleDateFormat CurTimeFormat = new SimpleDateFormat("HH시 mm분");
+        String strCurDate = CurDateFormat.format(date);
+        String strCurTime = CurTimeFormat.format(date);
+
+        time = strCurDate + strCurTime;
+        return time;
+    }
 }
