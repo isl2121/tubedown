@@ -2,13 +2,12 @@ package blackcat.tubedown;
 
 import android.app.Activity;
 import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
@@ -19,10 +18,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+
+import java.io.IOException;
 
 import blackcat.tubedown.drawer.NavigationDrawerCallbacks;
 import blackcat.tubedown.drawer.NavigationDrawerFragment;
+import blackcat.tubedown.util.ApplicationController;
+import blackcat.tubedown.util.SharedPreferenceUtils;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerCallbacks {
@@ -34,28 +43,155 @@ public class MainActivity extends ActionBarActivity
     private Toolbar mToolbar;
     private CharSequence mTitle;
     private BackPressCloseHandler backPressCloseHandler;
-
-    SharedPreferences preferenceManager;
+    private SharedPreferenceUtils sh;
     DownloadManager downloadManager;
     final String strPref_Download_ID = "PREF_DOWNLOAD_ID";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
+    // SharedPreferences에 저장할 때 key 값으로 사용됨.
+    public static final String PROPERTY_REG_ID = "registration_id";
+
+    // SharedPreferences에 저장할 때 key 값으로 사용됨.
+    private static final String PROPERTY_APP_VERSION = "appVersion";
+    private static final String TAG = "ICELANCER";
+
+    String SENDER_ID = "AIzaSyCnVwgLyq7SpfD1Lpbudi3bxz4hAoGYiJg";
+    Context context;
+    String regid;
+    GoogleCloudMessaging gcm;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Tracker t = ((ApplicationController)getApplication()).getTracker(ApplicationController.TrackerName.APP_TRACKER);
+        t.setScreenName("Start Activity");
+        t.send(new HitBuilders.AppViewBuilder().build());
+
         setContentView(blackcat.tubedown.R.layout.activity_main);
+        sh = new SharedPreferenceUtils(this);
+        context = getApplicationContext();
         backPressCloseHandler = new BackPressCloseHandler(this);
         //mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         //setSupportActionBar(mToolbar);
-        preferenceManager
-                = PreferenceManager.getDefaultSharedPreferences(this);
+
         downloadManager
                 = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(blackcat.tubedown.R.id.fragment_drawer);
-
+        init();
 
        // mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
     }
+
+    private void init() {
+        if (checkPlayServices()) {
+            gcm = GoogleCloudMessaging.getInstance(this);
+            regid = getRegistrationId(context);
+
+            if (regid.isEmpty()) {
+                registerInBackground();
+            }
+        } else {
+            Log.i(TAG, "No valid Google Play Services APK found.");
+        }
+    }
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.i("ICELANCER", "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+    private String getRegistrationId(Context context) {
+        String registrationId = sh.getValue(PROPERTY_REG_ID, "");
+        if (registrationId.isEmpty()) {
+            Log.i(TAG, "Registration not found.");
+            return "";
+        }
+
+        // 앱이 업데이트 되었는지 확인하고, 업데이트 되었다면 기존 등록 아이디를 제거한다.
+        // 새로운 버전에서도 기존 등록 아이디가 정상적으로 동작하는지를 보장할 수 없기 때문이다.
+        int registeredVersion =  sh.getValue(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+        int currentVersion = getAppVersion(context);
+        if (registeredVersion != currentVersion) {
+            Log.i(TAG, "App version changed.");
+            return "";
+        }
+        return registrationId;
+    }
+
+    private SharedPreferences getGCMPreferences(Context context) {
+        return getSharedPreferences(MainActivity.class.getSimpleName(),
+                Context.MODE_PRIVATE);
+    }
+
+    private static int getAppVersion(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            // should never happen
+            throw new RuntimeException("Could not get package name: " + e);
+        }
+    }
+
+
+    private void registerInBackground() {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(context);
+                    }
+                    gcm.unregister();
+                    regid = gcm.register(SENDER_ID);
+                    msg = "Device registered, registration ID=" + regid;
+
+                    // 서버에 발급받은 등록 아이디를 전송한다.
+                    // 등록 아이디는 서버에서 앱에 푸쉬 메시지를 전송할 때 사용된다.
+                    sendRegistrationIdToBackend();
+
+                    // 등록 아이디를 저장해 등록 아이디를 매번 받지 않도록 한다.
+                    storeRegistrationId(context, regid);
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                    // If there is an error, don't just keep trying to register.
+                    // Require the user to click a button again, or perform
+                    // exponential back-off.
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+                Log.e("Dispaly",msg);
+            }
+
+        }.execute(null, null, null);
+    }
+
+    private void storeRegistrationId(Context context, String regid) {
+        int appVersion = getAppVersion(context);
+        Log.i(TAG, "Saving regId on app version " + appVersion);
+        sh.put(PROPERTY_REG_ID, regid);
+        sh.put(PROPERTY_APP_VERSION, appVersion);
+    }
+
+    private void sendRegistrationIdToBackend() {
+
+    }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -92,7 +228,17 @@ public class MainActivity extends ActionBarActivity
                 break;
         }
     }
+    @Override
+    protected void onStart(){
+        super.onStart();
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+    }
 
+    @Override
+    protected void onStop(){
+        super.onStop();
+        GoogleAnalytics.getInstance(this).reportActivityStop(this);
+    }
 
     @Override
     public void onBackPressed() {
@@ -178,9 +324,6 @@ public class MainActivity extends ActionBarActivity
     protected void onResume() {
         // TODO Auto-generated method stub
         super.onResume();
-//        CheckDwnloadStatus();
-//        IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-//        registerReceiver(downloadReceiver, intentFilter);
     }
 
     @Override
@@ -188,101 +331,7 @@ public class MainActivity extends ActionBarActivity
         // TODO Auto-generated method stub
         super.onPause();
 
-        //unregisterReceiver(downloadReceiver);
     }
 
-    private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
 
-        @Override
-        public void onReceive(Context arg0, Intent arg1) {
-            // TODO Auto-generated method stub
-           // CheckDwnloadStatus();
-        }
-    };
-
-    private void CheckDwnloadStatus(){
-
-        // TODO Auto-generated method stub
-        DownloadManager.Query query = new DownloadManager.Query();
-        long id = preferenceManager.getLong(strPref_Download_ID, 0);
-        Log.i("test",String.valueOf(id));
-        query.setFilterById(id);
-        Cursor cursor = downloadManager.query(query);
-        if(cursor.moveToFirst()){
-            int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-            int status = cursor.getInt(columnIndex);
-            int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
-            int reason = cursor.getInt(columnReason);
-
-            switch(status){
-                case DownloadManager.STATUS_FAILED:
-                    String failedReason = "";
-                    switch(reason){
-                        case DownloadManager.ERROR_CANNOT_RESUME:
-                            failedReason = "일시정지를 할수없습니다.";
-                            break;
-                        case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                            failedReason = "기기를 찾을수없습니다.";
-                            break;
-                        case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                            failedReason = "파일이 이미 존재합니다.";
-                            break;
-                        case DownloadManager.ERROR_FILE_ERROR:
-                            failedReason = "파일오류";
-                            break;
-                        case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                            failedReason = "HTTP 오류";
-                            break;
-                        case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                            failedReason = "저장공간부족합니다.";
-                            break;
-                        case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-                            failedReason = "여러파일을 다운로드중입니다.";
-                            break;
-                        case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                            failedReason = "취급하지 않는 코드입니다.";
-                            break;
-                        case DownloadManager.ERROR_UNKNOWN:
-                            failedReason = "알수없는오류입니다.";
-                            break;
-                    }
-                    Log.e("#######Download", failedReason);
-                    Toast.makeText(MainActivity.this,
-                            "실패: " + failedReason,
-                            Toast.LENGTH_LONG).show();
-                    break;
-                case DownloadManager.STATUS_PAUSED:
-                    String pausedReason = "";
-                    switch(reason){
-                        case DownloadManager.PAUSED_QUEUED_FOR_WIFI:
-                            pausedReason = "와이파이 대기중입니다.";
-                            break;
-                        case DownloadManager.PAUSED_UNKNOWN:
-                            pausedReason = "알수없는오류입니다.";
-                            break;
-                        case DownloadManager.PAUSED_WAITING_FOR_NETWORK:
-                            pausedReason = "네트워크대기중입니다.";
-                            break;
-                        case DownloadManager.PAUSED_WAITING_TO_RETRY:
-                            pausedReason = "재시작대기중입니다.";
-                            break;
-                    }
-
-                    Toast.makeText(MainActivity.this,
-                            "일시정지: " + pausedReason,
-                            Toast.LENGTH_LONG).show();
-                    break;
-//                case DownloadManager.STATUS_PENDING:
-//                    Toast.makeText(MainActivity.this,
-//                            "준비중",
-//                            Toast.LENGTH_LONG).show();
-//                    break;
-//                case DownloadManager.STATUS_RUNNING:
-//                    Toast.makeText(MainActivity.this,
-//                            "다운로드 시작",
-//                            Toast.LENGTH_LONG).show();
-//                    break;
-            }
-        }
-    }
 }

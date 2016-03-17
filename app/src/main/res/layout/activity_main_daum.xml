@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/loading"
-    android:screenOrientation="portrait" >
+    android:orientation="vertical"
+    android:screenOrientation="portrait">
 
 
     <LinearLayout
@@ -13,10 +13,11 @@
         android:orientation="horizontal">
 
         <TextView
-            style="@style/MediumTextView"
+            style="@style/LargeTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_margin="10dp"
             android:text="다운로드 목록" />
 
     </LinearLayout>
@@ -28,7 +29,20 @@
         android:layout_marginTop="10dp"
         android:layout_weight="1"
         android:layoutAnimation="@anim/layout_controller"
-        android:persistentDrawingCache="animation|scrolling">
-    </ListView>
+        android:persistentDrawingCache="animation|scrolling"></ListView>
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView_daum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-8286911079963314/1460970785" />
+    </LinearLayout>
 </LinearLayout>

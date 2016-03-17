@@ -16,6 +16,8 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
+import blackcat.tubedown.util.SharedPreferenceUtils;
+
 /**
  * Created by sgsgf on 2015-09-24.
  */
@@ -27,13 +29,17 @@ public class file_path extends Activity
     ListView mListFile;
     Button mOk_btn,mfalse_btn;
     ArrayList<String> mArFile;
-    SharedPreferences preferenceManager;
+    SharedPreferences mSharedPreference1;
+    SharedPreferenceUtils sh;
+
     TextView mFilepath_text;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(blackcat.tubedown.R.layout.file_path);
-        preferenceManager  = PreferenceManager.getDefaultSharedPreferences(file_path.this);
+        sh = new SharedPreferenceUtils(this);
+        mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(this);
+
         // SD 카드가 장착되어 있지 않다면 앱 종료
         if( isSdCard() == false )
             finish();
@@ -56,19 +62,16 @@ public class file_path extends Activity
         mOk_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences.Editor PrefEdit = preferenceManager.edit();
                 String temp;
                 temp = mPath.replace(mRoot,"");
                 if(temp.equals("")){
-                    temp =  preferenceManager.getString("get_file_path", Environment.DIRECTORY_DOWNLOADS);
-                    PrefEdit.putString("get_file_path",Environment.DIRECTORY_DOWNLOADS);
-                    PrefEdit.commit();
-                    mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
+                    temp =  sh.getValue("get_file_path", Environment.DIRECTORY_DOWNLOADS);
+                    sh.put("get_file_path", Environment.DIRECTORY_DOWNLOADS);
+                    //mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
                     mFilepath_text.setText("저장파일선택 :" + temp);
                 }else{
-                    PrefEdit.putString("get_file_path", temp + "/");
-                    PrefEdit.commit();
-                    mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
+                    sh.put("get_file_path", temp + "/");
+                   // mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
                     mFilepath_text.setText("저장파일선택 :" + mPath+"/");
                 }
 

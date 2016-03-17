@@ -3,12 +3,9 @@ package blackcat.tubedown;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,6 +26,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -38,6 +38,7 @@ import java.util.Date;
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import blackcat.tubedown.service.InterfaceMapping;
+import blackcat.tubedown.util.ApplicationController;
 import blackcat.tubedown.util.SharedPreferenceUtils;
 
 /**
@@ -52,11 +53,10 @@ public class MainHomeFragment extends Fragment {
     final String strPref_Download_ID = "PREF_DOWNLOAD_ID";
     SharedPreferences mSharedPreference1;
     SharedPreferenceUtils sh;
-    DownloadManager downloadManager;
     MainActivity activity;
-    private WebView mWebView;
+    private WebView mWebView,mp3_web;
     public static String File_name;
-    public String web_url, type, downloadUrl, Video_title, filepath, name, path, data;
+    public String web_url, type, downloadUrl, Video_title, filepath, name, date;
     public static View view;
     public CustomDialog mCustomDialog;
     public ProgressBar progressDialog;
@@ -66,6 +66,7 @@ public class MainHomeFragment extends Fragment {
     public static ImageView first_help;
     private AlertDialog mDialog = null;
     private Button mMp3_button, mAvi_button;
+    Tracker t;
 
     @Override
     public void onAttach(Activity activity) {
@@ -96,14 +97,19 @@ public class MainHomeFragment extends Fragment {
         mWebView = (WebView) view.findViewById(blackcat.tubedown.R.id.webview_youtube);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.loadUrl("http://www.youtube.com/");
+        mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         mWebView.setWebViewClient(new WishWebViewClient());
         AdView adView = (AdView) view.findViewById(R.id.adView_home);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+        t = ((ApplicationController) getActivity().getApplication()).getTracker(ApplicationController.TrackerName.APP_TRACKER);
+        t.setScreenName("Main_activity");
+        t.send(new HitBuilders.AppViewBuilder().build());
 
         mAvi_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                t.send(new HitBuilders.EventBuilder().setCategory("MainActivity").setAction("avi").setLabel("avi button Click").build());
                 web_url = mWebView.getUrl();
                 web_url = replace(web_url);
                 if (!web_url.equals("false")) {
@@ -119,12 +125,38 @@ public class MainHomeFragment extends Fragment {
         mMp3_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                t.send(new HitBuilders.EventBuilder().setCategory("MainActivity").setAction("mp3").setLabel("m4a button Click").build());
                 web_url = mWebView.getUrl();
                 web_url = replace(web_url);
+                mAvi_button.setEnabled(false);
+                mMp3_button.setEnabled(false);
+                progressDialog.setVisibility(View.VISIBLE);
+//              String mp3_test = web_url.replace("https","http");
+//                mWebView.setDownloadListener(new DownloadListener() {
+//                    @Override
+//                    public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+//                        Uri source = Uri.parse(url);
+//                        String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
+//                        DownloadManager.Request request = new DownloadManager.Request(source);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+//                            request.allowScanningByMediaScanner();
+//                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+//                        } else {
+//                            request.setShowRunningNotification(true);
+//                        }
+//                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+//                        DownloadManager dm = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+//                        dm.enqueue(request);
+//                    }
+//                });
+//                mWebView = (WebView) view.findViewById(blackcat.tubedown.R.id.webview_youtube);
+//                mWebView.getSettings().setJavaScriptEnabled(true);
+//                mWebView.loadUrl("http://www.youtubeinmp3.com/fetch/?video="+mp3_test);
+//                // http://www.youtubeinmp3.com/fetch/?video=http://www.youtube.com/watch?v=ZYxLXaJjnOQ
+//                mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+//                mWebView.setWebViewClient(new WishWebViewClient());
+//                Log.e("mp3_url","http://www.youtubeinmp3.com/fetch/?video="+mp3_test);
                 if (!web_url.equals("false")) {
-                    mAvi_button.setEnabled(false);
-                    mMp3_button.setEnabled(false);
-                    progressDialog.setVisibility(View.VISIBLE);
                     Toast.makeText(getActivity(), "음원을 추출중입니다", Toast.LENGTH_SHORT).show();
                     getYoutubeDownurl(web_url, ".m4a");
                 }
@@ -166,21 +198,23 @@ public class MainHomeFragment extends Fragment {
             return true;
         }
     }
-/*
-  mAvi_button.setEnabled(true);
-                    mMp3_button.setEnabled(true);
-                    progressDialog.setVisibility(View.GONE);
-                    Toast.makeText(getActivity(), "저작권에 의해 다운로드받을수 없는 영상입니다", Toast.LENGTH_SHORT).show();
- */
+
     private void getYoutubeDownurl(String url, String temp) {
+        Log.e("url", url);
         type = temp;
         YouTubeUriExtractor ytEx = new YouTubeUriExtractor(getActivity().getApplicationContext()) {
             @Override
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
+                Log.e("url", "test1");
                 if (ytFiles == null) {
-                  return;
+                   /* mAvi_button.setEnabled(true);
+                    mMp3_button.setEnabled(true);
+                    progressDialog.setVisibility(View.GONE);
+                    Toast.makeText(getActivity(), "저작권에 의해 다운로드받을수 없는 영상입니다", Toast.LENGTH_SHORT).show();*/
+                    return;
                 }
                 int itag;
+                Log.e("url", "test3");
                 if (type.equals(".mp4")) {
                     try {
                         try {
@@ -192,9 +226,10 @@ public class MainHomeFragment extends Fragment {
                         }
                         Log.e("url", downloadUrl);
                     } catch (Exception e) {
-
+                        e.printStackTrace();
                     }
                 } else {
+                    Log.e("url", "test4");
                     try {
                         try {
                             itag = 141;
@@ -205,9 +240,10 @@ public class MainHomeFragment extends Fragment {
                         }
                         Log.e("url", downloadUrl);
                     } catch (Exception e) {
-
+                        e.printStackTrace();
                     }
                 }
+                Log.e("url", "test5");
                 try {
                     downloadUrl = URLDecoder.decode(downloadUrl, "UTF-8");
                     if (videoTitle.length() > 55) {
@@ -247,14 +283,6 @@ public class MainHomeFragment extends Fragment {
         mWebView.onResume();
     }
 
-    private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context arg0, Intent arg1) {
-            // TODO Auto-generated method stub
-            CheckDwnloadStatus();
-        }
-    };
-
     private AlertDialog createDialog() {
         AlertDialog.Builder ab = new AlertDialog.Builder(getActivity());
         ab.setTitle("저작권 알람");
@@ -278,7 +306,7 @@ public class MainHomeFragment extends Fragment {
     private String replace(String url) {
         String temp;
         if (url.contains("v=")) {
-            temp = url.replace("http://m.", "https://www.");
+//            temp = url.replace("http://m.", "https://www.");
             if (url.contains("list")) {
                 int start = url.indexOf("v=");
                 if (url.contains("&mode=")) {
@@ -320,15 +348,13 @@ public class MainHomeFragment extends Fragment {
     private void downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName) {
         int temp = sh.getValue("downlist_cnt", 0) + 1;
         name = "downlist_num" + String.valueOf(temp);
-        path = "downlist_path" + String.valueOf(temp);
-        data = "downlist_path" + String.valueOf(temp);
-        Log.e("name",name);
+        date = "downlist_date" + String.valueOf(temp);
 
-        filepath = sh.getValue("get_file_path", Environment.DIRECTORY_DOWNLOADS);
+        filepath = Environment.DIRECTORY_DOWNLOADS;
         data_type = sh.getValue("mWifi_Data", 2);
+
         sh.put(name, fileName);
-        sh.put(path, filepath);
-        sh.put(data, NowTime());
+        sh.put(date, NowTime());
         sh.put("downlist_cnt", temp);
 
         Uri uri = Uri.parse(youtubeDlUrl);
@@ -355,6 +381,18 @@ public class MainHomeFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        GoogleAnalytics.getInstance(getActivity().getApplication()).reportActivityStart(getActivity());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        GoogleAnalytics.getInstance(getActivity().getApplication()).reportActivityStart(getActivity());
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
     }
@@ -364,90 +402,6 @@ public class MainHomeFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-
-    private void CheckDwnloadStatus() {
-
-        // TODO Auto-generated method stub
-        DownloadManager.Query query = new DownloadManager.Query();
-        query.setFilterById(id);
-        Cursor cursor = downloadManager.query(query);
-        if (cursor.moveToFirst()) {
-            int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-            int status = cursor.getInt(columnIndex);
-            int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
-            int reason = cursor.getInt(columnReason);
-
-            switch (status) {
-                case DownloadManager.STATUS_FAILED:
-                    String failedReason = "";
-                    switch (reason) {
-                        case DownloadManager.ERROR_CANNOT_RESUME:
-                            failedReason = "일시정지를 할수없습니다.";
-                            break;
-                        case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                            failedReason = "기기를 찾을수없습니다.";
-                            break;
-                        case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                            failedReason = "파일이 이미 존재합니다.";
-                            break;
-                        case DownloadManager.ERROR_FILE_ERROR:
-                            failedReason = "파일오류";
-                            break;
-                        case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                            failedReason = "HTTP 오류";
-                            break;
-                        case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                            failedReason = "저장공간부족합니다.";
-                            break;
-                        case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-                            failedReason = "여러파일을 다운로드중입니다.";
-                            break;
-                        case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                            failedReason = "취급하지 않는 코드입니다.";
-                            break;
-                        case DownloadManager.ERROR_UNKNOWN:
-                            failedReason = "알수없는오류입니다.";
-                            break;
-                    }
-                    Log.e("#######Download", failedReason);
-                    Toast.makeText(getActivity(),
-                            "실패: " + failedReason,
-                            Toast.LENGTH_LONG).show();
-                    break;
-                case DownloadManager.STATUS_PAUSED:
-                    String pausedReason = "";
-                    switch (reason) {
-                        case DownloadManager.PAUSED_QUEUED_FOR_WIFI:
-                            pausedReason = "와이파이 대기중입니다.";
-                            break;
-                        case DownloadManager.PAUSED_UNKNOWN:
-                            pausedReason = "알수없는오류입니다.";
-                            break;
-                        case DownloadManager.PAUSED_WAITING_FOR_NETWORK:
-                            pausedReason = "네트워크대기중입니다.";
-                            break;
-                        case DownloadManager.PAUSED_WAITING_TO_RETRY:
-                            pausedReason = "재시작대기중입니다.";
-                            break;
-                    }
-
-                    Toast.makeText(getActivity(),
-                            "일시정지: " + pausedReason,
-                            Toast.LENGTH_LONG).show();
-                    break;
-//                case DownloadManager.STATUS_PENDING:
-//                    Toast.makeText(MainActivity.this,
-//                            "준비중",
-//                            Toast.LENGTH_LONG).show();
-//                    break;
-//                case DownloadManager.STATUS_RUNNING:
-//                    Toast.makeText(MainActivity.this,
-//                            "다운로드 시작",
-//                            Toast.LENGTH_LONG).show();
-//                    break;
-            }
-        }
-    }
 
     private String NowTime() {
         String time;

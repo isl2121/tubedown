@@ -27,7 +27,7 @@ public class CustomDialog extends Dialog{
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        //´ÙÀÌ¾ó·Î±× ÁØºñ
+        //ë‹¤ì´ì–¼ë¡œê·¸ ì¤€ë¹„
         WindowManager.LayoutParams lpWindow = new WindowManager.LayoutParams();
         lpWindow.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lpWindow.dimAmount = 0.8f;
@@ -37,7 +37,7 @@ public class CustomDialog extends Dialog{
         mContentView = (TextView) findViewById(blackcat.tubedown.R.id.txt_content);
         mLeftButton = (Button) findViewById(blackcat.tubedown.R.id.btn_left);
         mRightButton = (Button) findViewById(blackcat.tubedown.R.id.btn_right);
-        //¿¡µå¸÷ ºÎÂø
+        //ì—ë“œëª¹ ë¶€ì°©
         AdView adView = new AdView(getContext());
         adView.setAdUnitId("ca-app-pub-8286911079963314/1460970785");
         adView.setAdSize(AdSize.MEDIUM_RECTANGLE);

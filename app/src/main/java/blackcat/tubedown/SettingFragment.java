@@ -65,16 +65,6 @@ public class SettingFragment extends Fragment {
                 startActivity(intent);
             }
         });
-        mFilePath_LL = (LinearLayout)view.findViewById(blackcat.tubedown.R.id.file_path_btn);
-        mFilePath_LL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(),file_path.class);
-                startActivity(intent);
-            }
-        });
-        mFilepath_text = (TextView)view.findViewById(blackcat.tubedown.R.id.file_path_txt);
-        mFilepath_text.setText("저장파일선택 :" + temp);
 
         minternet_LL = (LinearLayout) view.findViewById(blackcat.tubedown.R.id.wifi_data_btn);
         mWifi_Data_text = (TextView) view.findViewById(blackcat.tubedown.R.id.wifi_data_txt);
