@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/black_01_bt03_off"
+    android:layout_margin="10dp"
+    android:padding="15dp">
+    <TextView
+        android:id="@+id/download_name"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="제목"
+        style="@style/LargeTextView" />
+
+    <TextView
+        android:id="@+id/download_date"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="날자"
+        style="@style/MediumTextView" />
+</LinearLayout>

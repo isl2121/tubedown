@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -29,10 +28,13 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
@@ -97,11 +99,33 @@ public class MainHomeFragment extends Fragment {
         mWebView = (WebView) view.findViewById(blackcat.tubedown.R.id.webview_youtube);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.loadUrl("http://www.youtube.com/");
-        mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         mWebView.setWebViewClient(new WishWebViewClient());
         AdView adView = (AdView) view.findViewById(R.id.adView_home);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+
+
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                Toast.makeText(getActivity(), "권한을 확인하였습니다.", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                Toast.makeText(getActivity(),  deniedPermissions.toString() + "\n 이 권한이 허가되지 않았습니다.", Toast.LENGTH_SHORT).show();
+            }
+
+
+        };
+
+
+        new TedPermission(getActivity())
+                .setPermissionListener(permissionlistener)
+                .setDeniedMessage("만약에 권한을 해제하고 싶으시다면 \n\n 설정 -> 어플리케이션 -> [권한] 에 들어가셔서 해제할수있습니다.")
+                .setPermissions(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.GET_ACCOUNTS)
+                .check();
+
         t = ((ApplicationController) getActivity().getApplication()).getTracker(ApplicationController.TrackerName.APP_TRACKER);
         t.setScreenName("Main_activity");
         t.send(new HitBuilders.AppViewBuilder().build());
@@ -111,6 +135,7 @@ public class MainHomeFragment extends Fragment {
             public void onClick(View v) {
                 t.send(new HitBuilders.EventBuilder().setCategory("MainActivity").setAction("avi").setLabel("avi button Click").build());
                 web_url = mWebView.getUrl();
+               // Log.e("gwet", web_url);
                 web_url = replace(web_url);
                 if (!web_url.equals("false")) {
                     mAvi_button.setEnabled(false);
@@ -131,31 +156,6 @@ public class MainHomeFragment extends Fragment {
                 mAvi_button.setEnabled(false);
                 mMp3_button.setEnabled(false);
                 progressDialog.setVisibility(View.VISIBLE);
-//              String mp3_test = web_url.replace("https","http");
-//                mWebView.setDownloadListener(new DownloadListener() {
-//                    @Override
-//                    public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-//                        Uri source = Uri.parse(url);
-//                        String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
-//                        DownloadManager.Request request = new DownloadManager.Request(source);
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-//                            request.allowScanningByMediaScanner();
-//                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-//                        } else {
-//                            request.setShowRunningNotification(true);
-//                        }
-//                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
-//                        DownloadManager dm = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
-//                        dm.enqueue(request);
-//                    }
-//                });
-//                mWebView = (WebView) view.findViewById(blackcat.tubedown.R.id.webview_youtube);
-//                mWebView.getSettings().setJavaScriptEnabled(true);
-//                mWebView.loadUrl("http://www.youtubeinmp3.com/fetch/?video="+mp3_test);
-//                // http://www.youtubeinmp3.com/fetch/?video=http://www.youtube.com/watch?v=ZYxLXaJjnOQ
-//                mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-//                mWebView.setWebViewClient(new WishWebViewClient());
-//                Log.e("mp3_url","http://www.youtubeinmp3.com/fetch/?video="+mp3_test);
                 if (!web_url.equals("false")) {
                     Toast.makeText(getActivity(), "음원을 추출중입니다", Toast.LENGTH_SHORT).show();
                     getYoutubeDownurl(web_url, ".m4a");
@@ -165,7 +165,6 @@ public class MainHomeFragment extends Fragment {
         mWebView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                //This is the filter
                 if (event.getAction() != KeyEvent.ACTION_DOWN)
                     return true;
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -200,12 +199,12 @@ public class MainHomeFragment extends Fragment {
     }
 
     private void getYoutubeDownurl(String url, String temp) {
-        Log.e("url", url);
+       // Log.e("url", url);
         type = temp;
         YouTubeUriExtractor ytEx = new YouTubeUriExtractor(getActivity().getApplicationContext()) {
             @Override
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
-                Log.e("url", "test1");
+            //    Log.e("url", "test1");
                 if (ytFiles == null) {
                    /* mAvi_button.setEnabled(true);
                     mMp3_button.setEnabled(true);
@@ -214,7 +213,7 @@ public class MainHomeFragment extends Fragment {
                     return;
                 }
                 int itag;
-                Log.e("url", "test3");
+             //   Log.e("url", "test3");
                 if (type.equals(".mp4")) {
                     try {
                         try {
@@ -224,12 +223,12 @@ public class MainHomeFragment extends Fragment {
                             itag = 18;
                             downloadUrl = ytFiles.get(itag).getUrl();
                         }
-                        Log.e("url", downloadUrl);
+                     //   Log.e("url", downloadUrl);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 } else {
-                    Log.e("url", "test4");
+                   // Log.e("url", "test4");
                     try {
                         try {
                             itag = 141;
@@ -238,12 +237,12 @@ public class MainHomeFragment extends Fragment {
                             itag = 140;
                             downloadUrl = ytFiles.get(itag).getUrl();
                         }
-                        Log.e("url", downloadUrl);
+                     //   Log.e("url", downloadUrl);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                Log.e("url", "test5");
+               // Log.e("url", "test5");
                 try {
                     downloadUrl = URLDecoder.decode(downloadUrl, "UTF-8");
                     if (videoTitle.length() > 55) {
@@ -325,7 +324,7 @@ public class MainHomeFragment extends Fragment {
             Toast.makeText(getActivity().getApplicationContext(), "동영상을 찾을수 없습니다.", Toast.LENGTH_SHORT).show();
             return "false";
         }
-        Log.e("temp", temp);
+       // Log.e("temp", temp);
         return temp;
     }
 
