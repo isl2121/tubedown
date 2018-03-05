@@ -16,9 +16,9 @@ public class ApplicationController extends Application {
     private static final String PROPERTY_ID = "UA-71100125-1";
 
     public enum TrackerName {
-        APP_TRACKER,           // 앱 별로 트래킹
-        GLOBAL_TRACKER,        // 모든 앱을 통틀어 트래킹
-        ECOMMERCE_TRACKER,     // 아마 유료 결재 트래킹 개념 같음
+        APP_TRACKER,
+        GLOBAL_TRACKER,
+        ECOMMERCE_TRACKER,
     }
 
     HashMap<TrackerName, Tracker> mTrackers = new HashMap<TrackerName, Tracker>();

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -37,6 +38,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import at.huber.youtubeExtractor.VideoMeta;
+import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import blackcat.tubedown.service.InterfaceMapping;
@@ -108,7 +111,7 @@ public class MainHomeFragment extends Fragment {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
-                Toast.makeText(getActivity(), "권한을 확인하였습니다.", Toast.LENGTH_SHORT).show();
+               Log.e("tubedown","권한 확인");
             }
 
             @Override
@@ -158,6 +161,7 @@ public class MainHomeFragment extends Fragment {
                 progressDialog.setVisibility(View.VISIBLE);
                 if (!web_url.equals("false")) {
                     Toast.makeText(getActivity(), "음원을 추출중입니다", Toast.LENGTH_SHORT).show();
+                    ///jsonmp3url(web_url);
                     getYoutubeDownurl(web_url, ".m4a");
                 }
             }
@@ -199,75 +203,91 @@ public class MainHomeFragment extends Fragment {
     }
 
     private void getYoutubeDownurl(String url, String temp) {
-       // Log.e("url", url);
-        type = temp;
-        YouTubeUriExtractor ytEx = new YouTubeUriExtractor(getActivity().getApplicationContext()) {
+        Log.e("url", url);
+
+        String youtubeLink = url;
+       // String youtubeLink = "https://youtube.com/watch?v=asU010VqjSY";
+        if (youtubeLink != null  && (youtubeLink.contains("://youtu.be/") || youtubeLink.contains("youtube.com/watch?v="))) {
+
+            // We have a valid link
+
+        } else {
+            Toast.makeText(getActivity().getApplicationContext(), "유튜브 링크에 문제를 확인했습니다. : " + youtubeLink, Toast.LENGTH_SHORT).show();
+        }
+
+        new YouTubeExtractor(this.getActivity()) {
             @Override
-            public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
-            //    Log.e("url", "test1");
-                if (ytFiles == null) {
-                   /* mAvi_button.setEnabled(true);
-                    mMp3_button.setEnabled(true);
-                    progressDialog.setVisibility(View.GONE);
-                    Toast.makeText(getActivity(), "저작권에 의해 다운로드받을수 없는 영상입니다", Toast.LENGTH_SHORT).show();*/
-                    return;
-                }
-                int itag;
-             //   Log.e("url", "test3");
-                if (type.equals(".mp4")) {
-                    try {
+            public void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta vMeta) {
+
+                if (ytFiles != null) {
+                    int itag;
+                    if (type.equals(".mp4")) {
                         try {
-                            itag = 22;
-                            downloadUrl = ytFiles.get(itag).getUrl();
+                            try {
+                                itag = 22;
+                                downloadUrl = ytFiles.get(itag).getUrl();
+                            } catch (Exception e) {
+                                itag = 18;
+                                downloadUrl = ytFiles.get(itag).getUrl();
+                            }
                         } catch (Exception e) {
-                            itag = 18;
-                            downloadUrl = ytFiles.get(itag).getUrl();
+                            e.printStackTrace();
                         }
-                     //   Log.e("url", downloadUrl);
-                    } catch (Exception e) {
+                    } else {
+                        try {
+                            try {
+                                itag = 141;
+                                downloadUrl = ytFiles.get(itag).getUrl();
+                            } catch (Exception e) {
+                                itag = 140;
+                                downloadUrl = ytFiles.get(itag).getUrl();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    try {
+                        downloadUrl = URLDecoder.decode(downloadUrl, "UTF-8");
+                        try{
+                            Log.e("title",vMeta.getTitle());
+                            if (vMeta.getTitle().length() > 55) {
+                                File_name = vMeta.getTitle().substring(0, 55) + type;
+                            } else {
+                                File_name = vMeta.getTitle() + type;
+                            }
+                        } catch (NullPointerException e) {
+
+                            long time = System.currentTimeMillis();
+
+                            SimpleDateFormat dayTime = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+
+                            String str = dayTime.format(new Date(time));
+
+                            File_name = "임시 제목" + str;
+                            Toast.makeText(getActivity().getApplicationContext(), "유튜브 제목을 받아오는중 오류가 발생하여 이름을 변경합니다", Toast.LENGTH_SHORT).show();
+                        }
+
+                        Video_title = File_name.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
+                        mAvi_button.setEnabled(true);
+                        mMp3_button.setEnabled(true);
+                        progressDialog.setVisibility(View.GONE);
+                        mCustomDialog = new CustomDialog(getActivity(), File_name, leftListener, rightListener);
+                        mCustomDialog.show();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    } catch (NullPointerException e) {
+                        Toast.makeText(getActivity().getApplicationContext(), "동영상변환중 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
                 } else {
-                   // Log.e("url", "test4");
-                    try {
-                        try {
-                            itag = 141;
-                            downloadUrl = ytFiles.get(itag).getUrl();
-                        } catch (Exception e) {
-                            itag = 140;
-                            downloadUrl = ytFiles.get(itag).getUrl();
-                        }
-                     //   Log.e("url", downloadUrl);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-               // Log.e("url", "test5");
-                try {
-                    downloadUrl = URLDecoder.decode(downloadUrl, "UTF-8");
-                    if (videoTitle.length() > 55) {
-                        File_name = videoTitle.substring(0, 55) + type;
-                    } else {
-                        File_name = videoTitle + type;
-                    }
-                    File_name = File_name.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
-                    Video_title = videoTitle.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
-                    mAvi_button.setEnabled(true);
-                    mMp3_button.setEnabled(true);
-                    progressDialog.setVisibility(View.GONE);
-                    mCustomDialog = new CustomDialog(getActivity(), videoTitle + type, leftListener, rightListener);
-                    mCustomDialog.show();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (NullPointerException e) {
-                    Toast.makeText(getActivity().getApplicationContext(), "동영상변환중 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
+                    Log.e("here","here");
                 }
             }
-        };
-        ytEx.setIncludeWebM(false);
-        ytEx.setParseDashManifest(true);
-        ytEx.execute(url);
+        }.extract(youtubeLink, true, true);
+
+        type = temp;
+
     }
 
     @Override
@@ -305,17 +325,15 @@ public class MainHomeFragment extends Fragment {
     private String replace(String url) {
         String temp;
         if (url.contains("v=")) {
-//            temp = url.replace("http://m.", "https://www.");
+
             if (url.contains("list")) {
                 int start = url.indexOf("v=");
                 if (url.contains("&mode=")) {
                     int end = url.indexOf("&mode=");
-                    temp = "https://www.youtube.com/watch?" + url.substring(start, end);
+                    url = "https://www.youtube.com/watch?" + url.substring(start, end);
                 } else {
-                    temp = "https://www.youtube.com/watch?" + url.substring(start);
+                    url = "https://www.youtube.com/watch?" + url.substring(start);
                 }
-            } else {
-                temp = url.replace("http://m.", "https://www.");
             }
         } else {
             mAvi_button.setEnabled(true);
@@ -324,8 +342,20 @@ public class MainHomeFragment extends Fragment {
             Toast.makeText(getActivity().getApplicationContext(), "동영상을 찾을수 없습니다.", Toast.LENGTH_SHORT).show();
             return "false";
         }
-       // Log.e("temp", temp);
-        return temp;
+        if(url.contains("t=")){
+            int start = url.indexOf("v=");
+            if (url.contains("&mode=")) {
+                int end = url.indexOf("&mode=");
+                url = "https://www.youtube.com/watch?" + url.substring(start, end);
+            } else {
+                url = "https://www.youtube.com/watch?" + url.substring(start);
+            }
+
+        }
+        url = url.replace("https://m.", "https://www.");
+        url = url.replace("http://m.", "https://www.");
+        Log.e("url", url);
+        return url;
     }
 
 

@@ -21,18 +21,18 @@ import blackcat.tubedown.util.SharedPreferenceUtils;
 /**
  * Created by sgsgf on 2015-09-24.
  */
-public class file_path extends Activity
-        implements AdapterView.OnItemClickListener {
+public class file_path extends Activity implements AdapterView.OnItemClickListener {
     String mRoot = "";
     String mPath = "";
     TextView mTextMsg;
     ListView mListFile;
-    Button mOk_btn,mfalse_btn;
+    Button mOk_btn, mfalse_btn;
     ArrayList<String> mArFile;
     SharedPreferences mSharedPreference1;
     SharedPreferenceUtils sh;
 
     TextView mFilepath_text;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,38 +41,38 @@ public class file_path extends Activity
         mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(this);
 
         // SD 카드가 장착되어 있지 않다면 앱 종료
-        if( isSdCard() == false )
+        if (isSdCard() == false)
             finish();
-        mTextMsg = (TextView)findViewById(blackcat.tubedown.R.id.textMessage);
+        mTextMsg = (TextView) findViewById(blackcat.tubedown.R.id.textMessage);
         // SD 카드 루트 폴더의 경로를 구한다
         mRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
         //mTextMsg.setText(mRoot);
         String[] fileList = getFileList(mRoot);
-        for(int i=0; i < fileList.length; i++)
-        // ListView 초기화
-        initListView();
+        for (int i = 0; i < fileList.length; i++)
+            // ListView 초기화
+            initListView();
         fileList2Array(fileList);
     }
 
     // ListView 초기화
     public void initListView() {
-        mOk_btn = (Button)findViewById(blackcat.tubedown.R.id.file_path_ok_btn);
-        mfalse_btn = (Button)findViewById(blackcat.tubedown.R.id.file_path_false_btn);
+        mOk_btn = (Button) findViewById(blackcat.tubedown.R.id.file_path_ok_btn);
+        mfalse_btn = (Button) findViewById(blackcat.tubedown.R.id.file_path_false_btn);
 
         mOk_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String temp;
-                temp = mPath.replace(mRoot,"");
-                if(temp.equals("")){
-                    temp =  sh.getValue("get_file_path", Environment.DIRECTORY_DOWNLOADS);
+                temp = mPath.replace(mRoot, "");
+                if (temp.equals("")) {
+                    temp = sh.getValue("get_file_path", Environment.DIRECTORY_DOWNLOADS);
                     sh.put("get_file_path", Environment.DIRECTORY_DOWNLOADS);
                     //mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
                     mFilepath_text.setText("저장파일선택 :" + temp);
-                }else{
+                } else {
                     sh.put("get_file_path", temp + "/");
-                   // mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
-                    mFilepath_text.setText("저장파일선택 :" + mPath+"/");
+                    // mFilepath_text = (TextView)SettingFragment.Setting_temp.findViewById(blackcat.tubedown.R.id.file_path_txt);
+                    mFilepath_text.setText("저장파일선택 :" + mPath + "/");
                 }
 
                 onBackPressed();
@@ -91,7 +91,7 @@ public class file_path extends Activity
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, mArFile);
 
-        mListFile = (ListView)findViewById(blackcat.tubedown.R.id.listFile);
+        mListFile = (ListView) findViewById(blackcat.tubedown.R.id.listFile);
         mListFile.setAdapter(adapter);
         mListFile.setOnItemClickListener(this);
     }
@@ -111,12 +111,11 @@ public class file_path extends Activity
     public String getAbsolutePath(String strFolder) {
         String strPath;
         // 이전 폴더일때
-        if( strFolder == ".." ) {
+        if (strFolder == "..") {
             // 전체 경로에서 최하위 폴더를 제거
             int pos = mPath.lastIndexOf("/");
             strPath = mPath.substring(0, pos);
-        }
-        else
+        } else
             strPath = mPath + "/" + strFolder;
         return strPath;
     }
@@ -137,7 +136,7 @@ public class file_path extends Activity
         // 폴더 경로를 지정해서 File 객체 생성
         File fileRoot = new File(strPath);
         // 해당 경로가 폴더가 아니라면 함수 탈출
-        if( fileRoot.isDirectory() == false )
+        if (fileRoot.isDirectory() == false)
             return null;
         mPath = strPath;
         mTextMsg.setText(mPath);
@@ -148,18 +147,18 @@ public class file_path extends Activity
 
     // 파일 목록을 ListView 에 표시
     public void fileList2Array(String[] fileList) {
-        if( fileList == null )
+        if (fileList == null)
             return;
         mArFile.clear();
         // 현재 선택된 폴더가 루트 폴더가 아니라면
-        if( mRoot.length() < mPath.length() )
+        if (mRoot.length() < mPath.length())
             // 이전 폴더로 이동하기 위해서 ListView 에 ".." 항목을 추가
             mArFile.add("..");
 
-        for(int i=0; i < fileList.length; i++) {
+        for (int i = 0; i < fileList.length; i++) {
             mArFile.add(fileList[i]);
         }
-        ArrayAdapter adapter = (ArrayAdapter)mListFile.getAdapter();
+        ArrayAdapter adapter = (ArrayAdapter) mListFile.getAdapter();
         adapter.notifyDataSetChanged();
     }
 

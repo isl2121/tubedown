@@ -31,6 +31,7 @@ import java.io.IOException;
 import blackcat.tubedown.drawer.NavigationDrawerCallbacks;
 import blackcat.tubedown.drawer.NavigationDrawerFragment;
 import blackcat.tubedown.util.ApplicationController;
+import blackcat.tubedown.util.BackPressCloseHandler;
 import blackcat.tubedown.util.SharedPreferenceUtils;
 
 public class MainActivity extends ActionBarActivity
@@ -64,7 +65,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Tracker t = ((ApplicationController)getApplication()).getTracker(ApplicationController.TrackerName.APP_TRACKER);
+        Tracker t = ((ApplicationController) getApplication()).getTracker(ApplicationController.TrackerName.APP_TRACKER);
         t.setScreenName("Start Activity");
         t.send(new HitBuilders.AppViewBuilder().build());
 
@@ -72,16 +73,12 @@ public class MainActivity extends ActionBarActivity
         sh = new SharedPreferenceUtils(this);
         context = getApplicationContext();
         backPressCloseHandler = new BackPressCloseHandler(this);
-        //mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        //setSupportActionBar(mToolbar);
 
-        downloadManager
-                = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(blackcat.tubedown.R.id.fragment_drawer);
+        downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(blackcat.tubedown.R.id.fragment_drawer);
         init();
 
-       // mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
+        // mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
     }
 
     private void init() {
@@ -96,6 +93,7 @@ public class MainActivity extends ActionBarActivity
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
     }
+
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
@@ -110,6 +108,7 @@ public class MainActivity extends ActionBarActivity
         }
         return true;
     }
+
     private String getRegistrationId(Context context) {
         String registrationId = sh.getValue(PROPERTY_REG_ID, "");
         if (registrationId.isEmpty()) {
@@ -119,7 +118,7 @@ public class MainActivity extends ActionBarActivity
 
         // 앱이 업데이트 되었는지 확인하고, 업데이트 되었다면 기존 등록 아이디를 제거한다.
         // 새로운 버전에서도 기존 등록 아이디가 정상적으로 동작하는지를 보장할 수 없기 때문이다.
-        int registeredVersion =  sh.getValue(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+        int registeredVersion = sh.getValue(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
         int currentVersion = getAppVersion(context);
         if (registeredVersion != currentVersion) {
             Log.i(TAG, "App version changed.");
@@ -175,7 +174,7 @@ public class MainActivity extends ActionBarActivity
 
             @Override
             protected void onPostExecute(String msg) {
-                Log.e("Dispaly",msg);
+                Log.e("Dispaly", msg);
             }
 
         }.execute(null, null, null);
@@ -197,7 +196,7 @@ public class MainActivity extends ActionBarActivity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         Fragment fragmentToReplace = PlaceholderFragment.newInstance(position + 1);
-        switch(position){
+        switch (position) {
             case 0:
                 // Report Health Issue
                 fragmentToReplace = new MainHomeFragment();
@@ -228,14 +227,15 @@ public class MainActivity extends ActionBarActivity
                 break;
         }
     }
+
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
         GoogleAnalytics.getInstance(this).reportActivityStart(this);
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
         GoogleAnalytics.getInstance(this).reportActivityStop(this);
     }
@@ -256,6 +256,7 @@ public class MainActivity extends ActionBarActivity
         }
         return super.onCreateOptionsMenu(menu);
     }
+
     public FragmentRefreshListener getFragmentRefreshListener() {
         return fragmentRefreshListener;
     }
@@ -266,9 +267,10 @@ public class MainActivity extends ActionBarActivity
 
     private FragmentRefreshListener fragmentRefreshListener;
 
-    public interface FragmentRefreshListener{
+    public interface FragmentRefreshListener {
         void onRefresh();
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

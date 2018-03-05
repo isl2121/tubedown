@@ -19,18 +19,16 @@ import blackcat.tubedown.service.InterfaceMapping;
 
 public class SettingFragment extends Fragment {
 
-    private static final String TAG = "FileChooserExampleActivity";
     static FragmentActivity Setting_temp;
     SharedPreferences preferenceManager;
-    private static final int REQUEST_CODE = 6384; // onActivityResult request
 
     public SettingFragment() {
         InterfaceMapping.getInstance().setFragment(this);
     }
 
-    LinearLayout mFilePath_LL,mMoveadmin_LL,mHowtoUse_LL,minternet_LL;
+    LinearLayout mMoveadmin_LL,mHowtoUse_LL,minternet_LL;
     MainActivity activity;
-    TextView mFilepath_text,mWifi_Data_text;
+    TextView mWifi_Data_text;
     public static String temp ,temp2;
     int mWifi_Data;
     @Override

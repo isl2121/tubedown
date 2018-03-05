@@ -36,13 +36,10 @@ public class MaindaumFragment extends Fragment {
         InterfaceMapping.getInstance().setFragment(this);
     }
 
-    final String strPref_Download_ID = "PREF_DOWNLOAD_ID";
-
     MainActivity activity;
-    public String web_url, type, downloadUrl, Video_title;
     public static View view;
     public long id;
-    public String down_name, down_date, down_path;
+    public String down_name, down_date;
     private ArrayList<ListData> data = new ArrayList<ListData>();
     private ListView mListView;
     private ListAdapter mAdapter;

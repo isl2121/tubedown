@@ -100,7 +100,6 @@ public class SharedPreferenceUtils {
             return dftValue;
         }
     }
-    //비었는지 확인해주는 함수
     public boolean isEmpty(String key) {
         SharedPreferences pref = mContext.getSharedPreferences(PREF_NAME, Activity.MODE_PRIVATE);
         if(pref.contains(key)) {
@@ -109,7 +108,7 @@ public class SharedPreferenceUtils {
             return true;
         }
     }
-    //해당 키값을 입력했을때 값을 삭제하는 함수
+
     public void delValue(String key) {
         SharedPreferences pref = mContext.getSharedPreferences(PREF_NAME, Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
